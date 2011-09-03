@@ -1,22 +1,15 @@
-// ---- Create an account ----
-// A full list of possible vars
-// can be found in the PSiGate documentation at
-// http://www.psigate.com/pages/techsupport.asp
-$response = PsigateAccountManager::createAccount(array(
-    'AccountID' => 'some-unique-id-99', // used when updating the account as well
-    'Name' => 'Bob Joe',
-    'Email' => 'jo@no.com',
-    'Comments' => 'group_id=5',
-    'CardInfo' => array(
-        'CardHolder' => 'Bob Joe',
-        'CardNumber' => '4111111111111111',
-        'CardExpMonth' => '08',
-        'CardExpYear' => '11'
-)));
-print_r($response);
+# PSiGate Account Manager PHP Class
 
-// ---- Update an account ----
-$response = PsigateAccountManager::updateAccount('some-unique-id-99', array(
-    'Email' => 'jo@noz.com',
-));
-print_r($response);
+This class is meant to give you the ability to quickly access the account manager API through quick method calls.
+It's HIGHLY recommended that you read through parts of the Account Manager API PDF located here: http://www.psigate.com/pages/techsupport.asp
+It will give you an insight as to what keys you need to post for different methods.
+
+## Usage
+
+* See example.php for usage
+
+## Change Log
+
+### Changes in 1.0 (Sept 3, 2011)
+
+* Launched!

@@ -21,8 +21,7 @@ class PsigateAccountManager {
      * Any action keys that are defined in our methods below.
      * Each have a corresponding code that gets used in
      * our request.
-     * @TODO: Complete this list. Right now it contains
-     * about half of what the API offers.
+     * @TODO: Complete this list.
      */
     protected static $_action_keys = array(
         'create_account' => 'AMA01',
@@ -31,8 +30,10 @@ class PsigateAccountManager {
         'enable_account' => 'AMA08',
         'disable_account' => 'AMA09',
         'add_credit_card' => 'AMA11',
+        'retrieve_charge' => 'RBC00',
         'create_charge' => 'RBC01',
-        'update_charge' => 'RBC02'
+        'update_charge' => 'RBC02',
+        'delete_charge' => 'RBC04',
     );
 
     /*
@@ -131,7 +132,7 @@ class PsigateAccountManager {
      * @param string $account_id The account you're retrieving
      * @return array
      */
-    function retrieveAccount($account_id)
+    public static function retrieveAccount($account_id)
     {
 
         self::$_action = 'retrieve_account';
@@ -152,7 +153,7 @@ class PsigateAccountManager {
      * @param string $account_id The account you're performing the action on
      * @return array
      */
-    function enableAccount($account_id)
+    public static function enableAccount($account_id)
     {
 
         self::$_action = 'enable_account';
@@ -173,7 +174,7 @@ class PsigateAccountManager {
      * @param string $account_id The account you're performing the action on
      * @return array
      */
-    function disableAccount($account_id)
+    public static function disableAccount($account_id)
     {
 
         self::$_action = 'disable_account';
@@ -203,7 +204,7 @@ class PsigateAccountManager {
      * @param array $cc_data The credit card data you're updating. See above.
      * @return array
      */
-    function addCreditCard($account_id, $cc_data)
+    public static function addCreditCard($account_id, $cc_data)
     {
 
         self::$_action = 'add_credit_card';
@@ -221,13 +222,105 @@ class PsigateAccountManager {
     }
 
     /*
+     * Create a charge
+     *
+     * @param string $account_id The account id you're creating the charge for
+     * @param array $data The charge data
+     */
+    public static function createCharge($account_id, $data)
+    {
+
+        self::$_action = 'create_charge';
+
+        $data['AccountID'] = $account_id;
+        self::_addToRequest('Charge', $data);
+
+        $response = self::_makeRequest();
+
+        return $response;
+
+    }
+
+    /*
+     * Update a charge
+     *
+     * @param string $rbc_id The RBCID identifier
+     * @param array $data The new data to set for updating the charge
+     */
+    public static function updateCharge($rbc_id, $data)
+    {
+
+        self::$_action = 'update_charge';
+
+        self::_addToRequest('Condition', array(
+            'RBCID' => $rbc_id    
+        ));
+
+        self::_addToRequest('Update', $data);
+
+        $response = self::_makeRequest();
+
+        return $response;
+
+    }
+
+    /*
+     * Delete a charge
+     *
+     * @param string $rbc_id The RBCID
+     */
+    public static function deleteCharge($rbc_id)
+    {
+
+        self::$_action = 'delete_charge';
+
+        self::_addToRequest('Condition', array(
+            'RBCID' => $rbc_id
+        ));
+
+        $response = self::_makeRequest();
+
+        return $response;
+
+    }
+
+    /*
+     * Retrieve charge by a set of conditions
+     *
+     * @param array|string $conditions The keys for conditions (AccountID => 'blah', 'RBCID' => '234') or AccountID
+     * @return array
+     */
+    public static function retrieveCharge($conditions)
+    {
+
+        self::$_action = 'retrieve_charge';
+
+        if(is_array($conditions))
+        {
+            self::_addToRequest('Condition', $conditions);
+        }
+        // Or else we can assume we're passing in an account ID
+        else
+        {
+            self::_addToRequest('Condition', array(
+                'AccountID' => $conditions
+            ));
+        }
+
+        $response = self::_makeRequest();
+
+        return $response;
+
+    }
+
+    /*
      * Add some key/val pairs to the request
      *
      * @param string $key The key wer'e adding
      * @param array $data The data that we're putting into the request key
      * @return null
      */
-    function _addToRequest($key, $data)
+    protected static function _addToRequest($key, $data)
     {
 
         self::$_request[$key] = $data;
@@ -239,7 +332,7 @@ class PsigateAccountManager {
      * 
      * @return null
      */
-    function _buildRequest()
+    protected static function _buildRequest()
     {
 
         // Deault request data
@@ -265,7 +358,7 @@ class PsigateAccountManager {
      *
      * @return array
      */
-    function _makeRequest()
+    protected static function _makeRequest()
     {
 
         self::_buildRequest();
