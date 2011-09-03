@@ -1,6 +1,7 @@
 <?
-define('PSIGATE_CID', '1103762');
-define('PSIGATE_USER_ID', 'dgoodale');
-define('PSIGATE_PASSWORD', 'psigate1234');
+define('PSIGATE_CID', '');
+define('PSIGATE_USER_ID', '');
+define('PSIGATE_PASSWORD', '');
 define('PSIGATE_URL', 'https://dev.psigate.com:8645/Messenger/AMMessenger');
+define('PSIGATE_DISABLE_SSL', true);
 ?>

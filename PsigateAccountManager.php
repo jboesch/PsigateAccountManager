@@ -1,4 +1,14 @@
 <?
+/**
+ * A simple PHP API wrapper for PSiGate Account Manager API requests.
+ * Stay up to date on Github: https://github.com/jboesch/PsigateAccountManager
+ *
+ * PHP version 5
+ *
+ * @author     Jordan Boesch <jordan@7shifts.com>
+ * @license    Dual licensed under the MIT and GPL licenses.
+ */
+class PsigateAccountManagerException extends Exception {}
 class PsigateAccountManager {
 
     /*
@@ -335,6 +345,21 @@ class PsigateAccountManager {
     protected static function _buildRequest()
     {
 
+        if(!defined('PSIGATE_CID'))
+        {
+            throw new PsigateAccountManagerException('PSIGATE_CID is not defined');
+        }
+
+        if(!defined('PSIGATE_USER_ID'))
+        {
+            throw new PsigateAccountManagerException('PSIGATE_USER_ID is not defined');
+        }
+
+        if(!defined('PSIGATE_PASSWORD'))
+        {
+            throw new PsigateAccountManagerException('PSIGATE_PASSWORD is not defined');
+        }
+
         // Deault request data
         $request_data = array(
             'CID' => PSIGATE_CID,
@@ -374,7 +399,11 @@ class PsigateAccountManager {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); // return into a variable
         curl_setopt($ch, CURLOPT_TIMEOUT, 40); // times out after 40s
         curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data); // add POST fields
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // TEMPORARY! @TODO: REMOVE
+        // You should normally leave this on. But I'll assume you know what you're doing ;)
+        if(defined('PSIGATE_DISABLE_SSL') && PSIGATE_DISABLE_SSL === true)
+        {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        }
         $result = curl_exec($ch); // run the whole process
         if (curl_errno($ch)) {
            print curl_error($ch);
