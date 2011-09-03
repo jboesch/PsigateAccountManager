@@ -360,6 +360,11 @@ class PsigateAccountManager {
             throw new PsigateAccountManagerException('PSIGATE_PASSWORD is not defined');
         }
 
+        if(!function_exists('curl_init'))
+        {
+            throw new PsigateAccountManagerException('This class requires cURL. Looks like you don\'t have it installed.');        
+        }
+
         // Deault request data
         $request_data = array(
             'CID' => PSIGATE_CID,
