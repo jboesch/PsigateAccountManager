@@ -219,11 +219,10 @@ class PsigateAccountManager {
 
         self::$_action = 'add_credit_card';
 
-        self::_addToRequest('Condition', array(
+        self::_addToRequest('Account', array(
             'AccountID' => $account_id,
+            'CardInfo' => $cc_data
         ));
-
-        self::_addToRequest('CardInfo', $cc_data);
 
         $response = self::_makeRequest();
 
