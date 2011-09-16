@@ -12,6 +12,12 @@ class PsigateAccountManagerException extends Exception {}
 class PsigateAccountManager {
 
     /*
+     * Useful if we want to see what we're about to send across
+     * the wire. (XML String)
+     */
+    public static $debug = false;
+
+    /*
      * The action that gets set in each method. Then
      * retrieved with self::$_action_keys[self::$_action]
      */
@@ -392,11 +398,17 @@ class PsigateAccountManager {
 
         self::_buildRequest();
 
-        $xml_inst = new SimpleXMLElement("<?xml version=\"1.0\"?><Request></Request>");
-
         // function call to convert array to xml
-        self::_array_to_xml(self::$_final_request, $xml_inst);
-        $post_data = $xml_inst->asXML();
+        $dom = new XmlDomConstruct('1.0', 'utf-8');
+        $req = array('Request' => self::$_final_request);
+        $dom->fromMixed($req);
+        $post_data = $dom->saveXML();
+
+        // If we're debugging, just return what we were going to send to the server
+        if(self::$debug)
+        {
+            return $post_data;
+        }
 
         $ch = curl_init();    // initialize curl handle
         curl_setopt($ch, CURLOPT_URL, PSIGATE_URL); // set url to post to
@@ -425,30 +437,82 @@ class PsigateAccountManager {
 
     }
 
-    /*
-     * Convert array to XML.
-     *
-     * @param $request_data array The array we're wanting to convert
-     * @param $xml_inst object The simplexml object instance
-     * @return string
-     */
-    protected static function _array_to_xml($request_data, &$xml_inst)
-    {
+}
 
-        foreach($request_data as $key => $value) {
-            if(is_array($value)) {
-                if(!is_numeric($key)){
-                    $subnode = $xml_inst->addChild("$key");
-                    self::_array_to_xml($value, $subnode);
+/**
+ * EXTENDS THE DOMDOCUMENT TO IMPLEMENT PERSONAL (UTILITY) METHODS.
+ *
+ * @AUTHOR TONI VAN DE VOORDE
+ */
+class XmlDomConstruct extends DOMDocument {
+
+    /**
+     * CONSTRUCTS ELEMENTS AND TEXTS FROM AN ARRAY OR STRING.
+     * THE ARRAY CAN CONTAIN AN ELEMENT'S NAME IN THE INDEX PART
+     * AND AN ELEMENT'S TEXT IN THE VALUE PART.
+     *
+     * IT CAN ALSO CREATES AN XML WITH THE SAME ELEMENT TAGNAME ON THE SAME
+     * LEVEL.
+     *
+     * EX:
+     * <NODES>
+     *   <NODE>TEXT</NODE>
+     *   <NODE>
+     *     <FIELD>HELLO</FIELD>
+     *     <FIELD>WORLD</FIELD>
+     *   </NODE>
+     * </NODES>
+     *
+     * ARRAY SHOULD THEN LOOK LIKE:
+     *
+     * ARRAY (
+     *   "NODES" => ARRAY (
+     *     "NODE" => ARRAY (
+     *       0 => "TEXT"
+     *       1 => ARRAY (
+     *         "FIELD" => ARRAY (
+     *           0 => "HELLO"
+     *           1 => "WORLD"
+     *         )
+     *       )
+     *     )
+     *   )
+     * )
+     *
+     * @PARAM MIXED $MIXED AN ARRAY OR STRING.
+     *
+     * @PARAM DOMELEMENT[OPTIONAL] $DOMELEMENT THEN ELEMENT
+     * FROM WHERE THE ARRAY WILL BE CONSTRUCT TO.
+     *
+     */
+    public function fromMixed($mixed, DOMElement $domElement = null) {
+
+        $domElement = is_null($domElement) ? $this : $domElement;
+
+        if (is_array($mixed)) {
+            foreach( $mixed as $index => $mixedElement ) {
+
+                if ( is_int($index) ) {
+                    if ( $index == 0 ) {
+                        $node = $domElement;
+                    } else {
+                        $node = $this->createElement($domElement->tagName);
+                        $domElement->parentNode->appendChild($node);
+                    }
                 }
-                else{
-                    self::_array_to_xml($value, $xml_inst);
+
+                else {
+                    $node = $this->createElement($index);
+                    $domElement->appendChild($node);
                 }
+
+                $this->fromMixed($mixedElement, $node);
+
             }
-            else {
-                $xml_inst->addChild("$key","$value");
-            }
+        } else {
+            $domElement->appendChild($this->createTextNode($mixed));
         }
+
     }
 
 }
