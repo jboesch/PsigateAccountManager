@@ -1,6 +1,6 @@
 <?
-require('config.php');
-require('PsigateAccountManager.php');
+require('psigate_config.php');
+require('lib/PsigateAccountManager.php');
 
 // Debug: Show what XML we're about to send to the server
 /*
