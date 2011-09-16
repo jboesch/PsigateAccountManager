@@ -422,10 +422,15 @@ class PsigateAccountManager {
         {
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         }
-        $result = curl_exec($ch); // run the whole process
-        if (curl_errno($ch)) {
-           print curl_error($ch);
-        } else {
+
+        $result = curl_exec($ch);
+
+        if(curl_errno($ch))
+        {
+           throw new PsigateAccountManagerException('A cURL error occured: ' . curl_error($ch));
+        }
+        else
+        {
            curl_close($ch);
         }
 
