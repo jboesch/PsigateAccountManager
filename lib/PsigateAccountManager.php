@@ -48,10 +48,12 @@ class PsigateAccountManager {
         'enable_account' => 'AMA08',
         'disable_account' => 'AMA09',
         'add_credit_card' => 'AMA11',
+        'delete_credit_card' => 'AMA14',
         'retrieve_charge' => 'RBC00',
         'create_charge' => 'RBC01',
         'update_charge' => 'RBC02',
         'delete_charge' => 'RBC04',
+        'immediate_charge' => 'RBC99'
     );
 
     /*
@@ -239,6 +241,29 @@ class PsigateAccountManager {
     }
 
     /*
+     * Delete a credit card
+     *
+     * @param string $account_id The account you're performing the action on
+     * @param string $serial_no The credit card SerialNo field
+     * @return array
+     */
+    public static function deleteCreditCard($account_id, $cc_serial_no)
+    {
+
+        self::$_action = 'delete_credit_card';
+
+        self::_addToRequest('Condition', array(
+            'AccountID' => $account_id,
+            'SerialNo' => $cc_serial_no
+        ));
+
+        $response = self::_makeRequest();
+
+        return $response;
+
+    }
+
+    /*
      * Create a charge
      *
      * @param string $account_id The account id you're creating the charge for
@@ -323,6 +348,26 @@ class PsigateAccountManager {
                 'AccountID' => $conditions
             ));
         }
+
+        $response = self::_makeRequest();
+
+        return $response;
+
+    }
+
+    /*
+     * Perform an immediate charge
+     *
+     * @param string $account_id The account id you're creating the charge for
+     * @param array $data The charge data
+     */
+    public static function immediateCharge($account_id, $data)
+    {
+
+        self::$_action = 'immediate_charge';
+
+        $data['AccountID'] = $account_id;
+        self::_addToRequest('Charge', $data);
 
         $response = self::_makeRequest();
 
